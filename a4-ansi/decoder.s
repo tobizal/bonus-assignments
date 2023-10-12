@@ -1,9 +1,11 @@
 .data
 
 output_string:		.asciz	"%c"
-counter:		.byte	0x0		#amount of times the character is to be printed
-character:		.byte	0x0		#the character to be printed (ASCII)
-relative_address:	.long	0x0		#the relative address of the next memory block
+back_color:		.byte	0x0		# ANSI background color
+fore_color:		.byte	0x0		# ANSI foregound color
+counter:		.byte	0x0		# amount of times the character is to be printed
+character:		.byte	0x0		# the character to be printed (ASCII)
+relative_address:	.long	0x0		# the relative address of the next memory block
 first_address:		.long	0x0
 
 .text
