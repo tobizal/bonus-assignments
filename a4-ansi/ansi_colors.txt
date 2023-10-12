@@ -1,0 +1,9 @@
+ANSI Color Codes
+
+Basic colors - foregrounds
+\x1b[30m	foreground black
+\x1b[32m	foreground green
+
+Basic colors - background
+\x1b[40m	background black
+\x1b[42m	background green
