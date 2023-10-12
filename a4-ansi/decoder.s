@@ -46,7 +46,13 @@ decode_loop:
 	shrq	$8, %R8		  	# shift right by byte (now Byte 6 is last)
 
 	movl	%R8D, relative_address	# copy 4 LSBs (Bytes 3-6 incl) to relative_address
-	
+	shr	$32, %R8		# shift right by 4 bytes (now Byte 2 is last)
+
+	movb	%R8B, fore_color	# copy LSB (Byte 2) to the foreground color code 
+	shr	$8, %R8			# shift right by 1 byte (now Byte 1 is last)
+
+	movb	%R8B, back_color	# copy LSB to the background color code variable
+
 	#print loop
 	movb	counter, %DL		# copy the counter variable to the lowest Byte of rdx
 print_loop:
