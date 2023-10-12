@@ -1,5 +1,7 @@
 .data
 
+#ANSI color guide at https://talyian.github.io/ansicolors/
+
 output_string:		.asciz	"%c"
 back_color:		.byte	0x0		# ANSI background color
 fore_color:		.byte	0x0		# ANSI foregound color
