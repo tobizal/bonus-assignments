@@ -1,17 +1,45 @@
 .data
 
 #ANSI color guide at https://talyian.github.io/ansicolors/
+fblack:                 .asciz  "\x1b[30m"
+fred:                   .asciz  "\x1b[31m"
+fgreen:                 .asciz  "\x1b[32m"
+fyellow:                .asciz  "\x1b[33m"
+fblue:                  .asciz  "\x1b[34m"
+fmagenta:               .asciz  "\x1b[35m"
+fcyan:                  .asciz  "\x1b[36m"
+fwhite:                 .asciz  "\x1b[37m"
 
-output_string:		.asciz	"%c"
-back_color:		.byte	0x0		# ANSI background color
-fore_color:		.byte	0x0		# ANSI foregound color
-counter:		.byte	0x0		# amount of times the character is to be printed
-character:		.byte	0x0		# the character to be printed (ASCII)
-relative_address:	.long	0x0		# the relative address of the next memory block
-first_address:		.long	0x0
+bblack:                 .asciz  "\x1b[40m"
+bred:                   .asciz  "\x1b[41m"
+bgreen:                 .asciz  "\x1b[42m"
+byellow:                .asciz  "\x1b[43m"
+bblue:                  .asciz  "\x1b[44m"
+bmagenta:               .asciz  "\x1b[45m"
+bcyan:                  .asciz  "\x1b[46m"
+bwhite:                 .asciz  "\x1b[47m"
+
+#string definitions
+output_string:          .asciz  "%c"
+
+reset:                  .asciz  "\x1b[0m"
+stop_blinking:          .asciz  "\x1b[25m"    
+bold:                   .asciz  "\x1b[1m"    
+faint:                  .asciz  "\x1b[2m"
+conceal:                .asciz  "\x1b[8m"
+reveal:                 .asciz  "\x1b[28m"
+blink:                  .asciz  "\x1b[5m"
+
+back_color:             .byte   0x0             # ANSI background color
+fore_color:             .byte   0x0             # ANSI foregound color
+counter:                .byte   0x0             # amount of times the character is to be printed
+character:              .byte   0x0             # the character to be printed (ASCII)
+relative_address:       .long   0x0             # the relative address of the next memory block
+first_address:          .long   0x0 
+
 
 .text
-.include "final.s"
+.include "helloWorld.s"
 
 .global main
 
@@ -53,6 +81,19 @@ decode_loop:
 
 	movb	%R8B, back_color	# copy LSB to the background color code variable
 
+	
+
+	#set background color
+	movq	$0, %RDX		# zero the rdx register
+	movb	back_color, %DL		# copy the background color code to DL
+	shlq	$3, %RDX		# muiltiply by 8
+	movq	background_color_switch(%RDX), %RDX	# load the address from the table
+	call	*%RDX			# call the correspoing subroutine to the this case
+	
+	movq	$0, %rax		# set the background color with printf
+	call	printf
+
+print:
 	#print loop
 	movb	counter, %DL		# copy the counter variable to the lowest Byte of rdx
 print_loop:
@@ -62,9 +103,11 @@ print_loop:
 	movq	$0, %rax		# no vector registers for printf
 	movq	$output_string, %rdi	# load the output string
 	movzb	character, %rsi		# load the character(zero extended) to be printed
-	movb	%DL, counter		# buffer the value in %DL in counter variable
+	push	%RDX			# preserve the value of RDX
+	push	%RDX			# align the stack
 	call	printf			
-	movb	counter, %DL		# copy the counter back to %DL
+	pop	%RDX
+	pop	%RDX
 
 	decb	%DL			# decrement the counter
 	jmp	print_loop		# next iteration
@@ -96,3 +139,75 @@ main:
 	movq	$0, %rdi		# load program exit code
 	call	exit			# exit the program
 
+
+
+
+# background color switch statement
+
+background_color_switch:
+	.quad	bcase0
+	.quad	bcase1
+	.quad	bcase2
+	.quad	bcase3
+	.quad	bcase4
+	.quad	bcase5
+	.quad	bcase6
+	.quad	bcase7
+bcase0:
+	movq	$bblack, %RDI
+	ret
+bcase1:
+	movq	$bred, %RDI
+	ret
+bcase2:
+	movq	$bgreen, %RDI
+	ret
+bcase3:
+	movq	$byellow, %RDI
+	ret
+bcase4:
+	movq	$bblue, %RDI
+	ret
+bcase5:
+	movq	$bmagenta, %RDI
+	ret
+bcase6:
+	movq	$bcyan, %RDI
+	ret
+bcase7:
+	movq	$bwhite, %RDI
+	ret
+
+foreground_color_switch:
+	.quad	fcase0
+	.quad	fcase1
+	.quad	fcase2
+	.quad	fcase3
+	.quad	fcase4
+	.quad	fcase5
+	.quad	fcase6
+	.quad	fcase7
+fcase0:
+	movq	$fblack, %RDI
+	ret
+fcase1:
+	movq	$fred, %RDI
+	ret
+fcase2:
+	movq	$fgreen, %RDI
+	ret
+fcase3:
+	movq	$fyellow, %RDI
+	ret
+fcase4:
+	movq	$fblue, %RDI
+	ret
+fcase5:
+	movq	$fmagenta, %RDI
+	ret
+fcase6:
+	movq	$fcyan, %RDI
+	ret
+fcase7:
+	movq	$fwhite, %RDI
+	ret
