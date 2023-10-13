@@ -93,6 +93,16 @@ decode_loop:
 	movq	$0, %rax		# set the background color with printf
 	call	printf
 
+	#set foreground color
+	movq	$0, %RDX		# zero the rdx register
+	movb	fore_color, %DL		# copy the background color code to DL
+	shlq	$3, %RDX		# muiltiply by 8
+	movq	foreground_color_switch(%RDX), %RDX	# load the address from the table
+	call	*%RDX			# call the correspoing subroutine to the this case
+	
+	movq	$0, %rax		# set the foreground color with printf
+	call	printf
+
 print:
 	#print loop
 	movb	counter, %DL		# copy the counter variable to the lowest Byte of rdx
