@@ -39,7 +39,7 @@ first_address:          .long   0x0
 
 
 .text
-.include "helloWorld.s"
+.include "final.s"
 
 .global main
 
@@ -74,18 +74,27 @@ decode_loop:
 	shrq	$8, %R8		  	# shift right by byte (now Byte 6 is last)
 
 	movl	%R8D, relative_address	# copy 4 LSBs (Bytes 3-6 incl) to relative_address
-	shr	$32, %R8		# shift right by 4 bytes (now Byte 2 is last)
+	shrq	$32, %R8		# shift right by 4 bytes (now Byte 2 is last)
 
 	movb	%R8B, fore_color	# copy LSB (Byte 2) to the foreground color code 
-	shr	$8, %R8			# shift right by 1 byte (now Byte 1 is last)
+	shrq	$8, %R8			# shift right by 1 byte (now Byte 1 is last)
 
 	movb	%R8B, back_color	# copy LSB to the background color code variable
 
-	
+	#check if special effects apply
+	movq	$0, %RDX		# zero RDX
+	movb	fore_color, %DL
+	movb	back_color, %R8B
+	cmp	%DL, %R8B
+	je	special_effects
 
 	#set background color
+set_background:
 	movq	$0, %RDX		# zero the rdx register
 	movb	back_color, %DL		# copy the background color code to DL
+	cmp	$7, %DL			# check if out of bounds
+	jg	set_foreground		# abort background if out of bounds
+
 	shlq	$3, %RDX		# muiltiply by 8
 	movq	background_color_switch(%RDX), %RDX	# load the address from the table
 	call	*%RDX			# call the correspoing subroutine to the this case
@@ -94,14 +103,68 @@ decode_loop:
 	call	printf
 
 	#set foreground color
+set_foreground:
 	movq	$0, %RDX		# zero the rdx register
 	movb	fore_color, %DL		# copy the background color code to DL
+	cmp	$7, %DL			# check if out of bounds
+	jg	print			# abort if out of bounds
+
 	shlq	$3, %RDX		# muiltiply by 8
 	movq	foreground_color_switch(%RDX), %RDX	# load the address from the table
 	call	*%RDX			# call the correspoing subroutine to the this case
 	
 	movq	$0, %rax		# set the foreground color with printf
 	call	printf
+	jmp	print			# jump to printing the character, avoid special effects
+
+	#special effects
+special_effects:
+	cmp	$0, %DL
+	je	scase0
+
+	cmp	$37, %DL
+	je	scase37
+
+	cmp	$42, %DL
+	je	scase42
+
+	cmp	$66, %DL
+	je	scase66
+
+	cmp	$105, %DL
+	je	scase105
+
+	cmp	$153, %DL
+	je	scase153
+
+	cmp	$182, %DL
+	je	scase182
+
+scase0:
+	movq	$reset, %RDI
+	jmp	apply_special_effects
+scase37:
+	movq	$stop_blinking, %RDI
+	jmp	apply_special_effects
+scase42:
+	movq	$bold, %RDI
+	jmp	apply_special_effects
+scase66:
+	movq	$faint, %RDI
+	jmp	apply_special_effects
+scase105:
+	movq	$conceal, %RDI
+	jmp	apply_special_effects
+scase153:
+	movq	$reveal, %RDI
+	jmp	apply_special_effects
+scase182:
+	movq	$blink, %RDI
+	jmp	apply_special_effects
+
+apply_special_effects:
+	movq	$0, %RAX
+	call printf
 
 print:
 	#print loop
