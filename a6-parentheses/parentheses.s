@@ -22,6 +22,7 @@ closed_brackets:
 	.ascii	"}"
 
 input:		.asciz	"[]{}[()()]"
+error_msg:	.asciz	"Invalid character in the string."
 
 .text
 
@@ -53,8 +54,9 @@ closed_check:
 	je	is_closed_bracket
 	loop	closed_check
 	
+	jmp	invalid_character_error
 is_open_bracket:
-is_clsoed_bracket:
+is_closed_bracket:
 
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack variables
@@ -63,3 +65,10 @@ is_clsoed_bracket:
 end:
 	movq	$0, %rax		# load the exit code
 	call	printf			# and exit
+
+invalid_character_error:
+	movq	$error_msg, %rdi	# load error message
+	movq	$0, %rax		# no vector arguments for printf
+	call 	printf
+	movq	$2, %rax		# load exit code 2
+	call	exit			# exit the program
