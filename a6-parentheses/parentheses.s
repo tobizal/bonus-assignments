@@ -21,7 +21,7 @@ closed_brackets:
 	.ascii	"]"
 	.ascii	"}"
 
-input:		.asciz	"{[]<>[]({()})}"
+input:		.asciz	"{[b]<>[]({()})}"
 error_msg:	.asciz	"Invalid character in the string. Error.\n"
 invalid_msg:	.asciz	"Invalid parentheses.\n"
 valid_msg:	.asciz	"Valid parentheses.\n"
@@ -40,7 +40,7 @@ main:
 main_loop:
 	cmpb	$0, (%rdi)		# check if its the end of the string
 	je	stack_check		# proceed to stack check
-	leaq	open_brackets, %rsi	# move the addres of first bracket to check for
+	movq	$open_brackets, %rsi	# move the addres of first bracket to check for
 	movq	$4, %rcx		# rcx as a loop counter for LOOP
 open_check:
 	cmpsb				# compare ASCII characters at RSI and RDi loc
@@ -50,7 +50,7 @@ open_check:
 	je	is_open_bracket		# if ZF=1 its an open bracket, jump to corresp code
 	loop	open_check		# loop as long as rcx != 0
 
-	leaq	closed_brackets, %rsi	# move the check string to closed_brackets
+	movq	$closed_brackets, %rsi	# move the check string to closed_brackets
 	movq	$4, %rcx		# rcx as a loop counter for LOOP
 closed_check:
 	cmpsb				# compare the string at the given locations
