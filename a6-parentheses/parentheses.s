@@ -60,7 +60,10 @@ closed_check:
 	je	is_closed_bracket	# if ZF=1 its a closed bracket, jmp to coreesp code
 	loop	closed_check		# loop as long as rcx != 0
 	
-	jmp	invalid_character_error	# if code went this far, no bracket match was found-err
+	# jmp	invalid_character_error	# if code went this far, no bracket match was found-err
+	# just ignore the character
+	inc	%rdi			# increment the main pointer
+	jmp	main_loop
 
 is_open_bracket:
 	dec	%rsi			# compensate for the automatic inc of cmpsb
