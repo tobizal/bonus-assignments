@@ -21,23 +21,25 @@ closed_brackets:
 	.ascii	"]"
 	.ascii	"}"
 
-input:		.asciz	"{[b]<>[]({()})}"
-error_msg:	.asciz	"Invalid character in the string. Error.\n"
-invalid_msg:	.asciz	"Invalid parentheses.\n"
-valid_msg:	.asciz	"Valid parentheses.\n"
-
+invalid_msg:	.asciz	"invalid"
+valid_msg:	.asciz	"valid"
 .text
 
-.include "check_validity.s"
+.include "basic.s"
 
 .global main
 
-main:
-	#prologue
-	pushq	%rbp			# store the caller's base pointer on the stack
-	movq	%rsp, %rbp		# update the base pointer for this stack frame
-
-	movq	$input, %rdi		# move the main pointer to %RDX
+# *******************************************************************************************
+# Subroutine: check_validity                                                                *
+# Description: checks the validity of a string of parentheses as defined in Assignment 6.   *
+# Parameters:                                                                               *
+#   first: the string that should be check_validity                                         *
+#   return: the result of the check, either "valid" or "invalid"                            *
+# *******************************************************************************************
+check_validity:
+	# prologue
+	pushq	%rbp 			# push the base pointer (and align the stack)
+	movq	%rsp, %rbp		# copy stack pointer value to base pointer
 
 main_loop:
 	cmpb	$0, (%rdi)		# check if its the end of the string
@@ -96,29 +98,29 @@ invalid:
 	movq	$invalid_msg, %rdi
 	movq	$0, %rax
 	call 	printf
+	movq	$invalid_msg, %rax
 	jmp	end
 valid:
 	movq	$valid_msg, %rdi
 	movq	$0, %rax
 	call 	printf
+	movq	$valid_msg, %rax
 	jmp	end
 	
 end:
 	# epilogue
-	movq	%rbp, %rsp		# clear the stack variables
-	popq	%rbp			# restore the caller's base pointer
-	movq	$0, %rax		# load the exit code
-	call	exit			# and exit
+	movq	%rbp, %rsp		# clear local variables from stack
+	popq	%rbp			# restore base pointer location 
+	ret
 
+main:
+	pushq	%rbp 			# push the base pointer (and align the stack)
+	movq	%rsp, %rbp		# copy stack pointer value to base pointer
 
+	movq	$MESSAGE, %rdi		# first parameter: address of the message
+	call	check_validity		# call check_validity
 
-
-
-
-
-invalid_character_error:
-	movq	$error_msg, %rdi	# load error message
-	movq	$0, %rax		# no vector arguments for printf
-	call 	printf
-	movq	$2, %rax		# load exit code 2
+	popq	%rbp			# restore base pointer location 
+	movq	$0, %rdi		# load program exit code
 	call	exit			# exit the program
+

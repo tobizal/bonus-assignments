@@ -1,24 +1,7 @@
 .data
 
 #ANSI color guide at https://talyian.github.io/ansicolors/
-fblack:                 .asciz  "\x1b[30m"
-fred:                   .asciz  "\x1b[31m"
-fgreen:                 .asciz  "\x1b[32m"
-fyellow:                .asciz  "\x1b[33m"
-fblue:                  .asciz  "\x1b[34m"
-fmagenta:               .asciz  "\x1b[35m"
-fcyan:                  .asciz  "\x1b[36m"
-fwhite:                 .asciz  "\x1b[37m"
-
-bblack:                 .asciz  "\x1b[40m"
-bred:                   .asciz  "\x1b[41m"
-bgreen:                 .asciz  "\x1b[42m"
-byellow:                .asciz  "\x1b[43m"
-bblue:                  .asciz  "\x1b[44m"
-bmagenta:               .asciz  "\x1b[45m"
-bcyan:                  .asciz  "\x1b[46m"
-bwhite:                 .asciz  "\x1b[47m"
-
+color:			.asciz	"\x1b[38;5;%ldm\x1b[48;5;%ldm"
 #string definitions
 output_string:          .asciz  "%c"
 
@@ -88,34 +71,13 @@ decode_loop:
 	cmp	%DL, %R8B
 	je	special_effects
 
-	#set background color
-set_background:
-	movq	$0, %RDX		# zero the rdx register
-	movb	back_color, %DL		# copy the background color code to DL
-	cmp	$7, %DL			# check if out of bounds
-	jg	set_foreground		# abort background if out of bounds
-
-	shlq	$3, %RDX		# muiltiply by 8
-	movq	background_color_switch(%RDX), %RDX	# load the address from the table
-	call	*%RDX			# call the correspoing subroutine to the this case
-	
+	#set foreground and background colors
 	movq	$0, %rax		# set the background color with printf
+	movq	$color, %rdi		# first arg: output string
+	movzb	fore_color, %rsi	# second arg: foreground color code
+	movzb	back_color, %rdx	# third arg: background color code
 	call	printf
-
-	#set foreground color
-set_foreground:
-	movq	$0, %RDX		# zero the rdx register
-	movb	fore_color, %DL		# copy the background color code to DL
-	cmp	$7, %DL			# check if out of bounds
-	jg	print			# abort if out of bounds
-
-	shlq	$3, %RDX		# muiltiply by 8
-	movq	foreground_color_switch(%RDX), %RDX	# load the address from the table
-	call	*%RDX			# call the correspoing subroutine to the this case
-	
-	movq	$0, %rax		# set the foreground color with printf
-	call	printf
-	jmp	print			# jump to printing the character, avoid special effects
+	jmp	print
 
 	#special effects
 special_effects:
@@ -215,72 +177,3 @@ main:
 
 
 
-# background color switch statement
-
-background_color_switch:
-	.quad	bcase0
-	.quad	bcase1
-	.quad	bcase2
-	.quad	bcase3
-	.quad	bcase4
-	.quad	bcase5
-	.quad	bcase6
-	.quad	bcase7
-bcase0:
-	movq	$bblack, %RDI
-	ret
-bcase1:
-	movq	$bred, %RDI
-	ret
-bcase2:
-	movq	$bgreen, %RDI
-	ret
-bcase3:
-	movq	$byellow, %RDI
-	ret
-bcase4:
-	movq	$bblue, %RDI
-	ret
-bcase5:
-	movq	$bmagenta, %RDI
-	ret
-bcase6:
-	movq	$bcyan, %RDI
-	ret
-bcase7:
-	movq	$bwhite, %RDI
-	ret
-
-foreground_color_switch:
-	.quad	fcase0
-	.quad	fcase1
-	.quad	fcase2
-	.quad	fcase3
-	.quad	fcase4
-	.quad	fcase5
-	.quad	fcase6
-	.quad	fcase7
-fcase0:
-	movq	$fblack, %RDI
-	ret
-fcase1:
-	movq	$fred, %RDI
-	ret
-fcase2:
-	movq	$fgreen, %RDI
-	ret
-fcase3:
-	movq	$fyellow, %RDI
-	ret
-fcase4:
-	movq	$fblue, %RDI
-	ret
-fcase5:
-	movq	$fmagenta, %RDI
-	ret
-fcase6:
-	movq	$fcyan, %RDI
-	ret
-fcase7:
-	movq	$fwhite, %RDI
-	ret
