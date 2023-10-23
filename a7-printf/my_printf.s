@@ -135,11 +135,23 @@ int_to_str:
 	cmpq	$0, %rax
 	je	positive
 negative:
-	
+	notq	%rdi			# invert all bits
+	addq	$1, %rdi		# add 1
+	call	uint_to_str		# convert as if positive
+
+	movdqa	uint_str, %xmm1		# move the result to int_str
+	movdqa	%xmm1, int_str		
+
+	movdqa	int_str, %xmm1		# move the double quadword to xmm1 for shift
+	pslldq	$1, %xmm1		# packed shift right logical double quadword on xmm1
+	movdqa	%xmm1, int_str		# store the number back
+	movb	$45, int_str		# put a minus sign at the beginning
+	jmp	int_to_str_end
 positive:
 	call	uint_to_str		# convert normally
 	movdqa	uint_str, %xmm1		# move the result to int_str
 	movdqa	%xmm1, int_str		
+int_to_str_end:
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
 	popq	%rbp			# restore the caller's base pointer
@@ -155,7 +167,7 @@ main:
 	call 	print_str		
 
 	# test of uint_to_str
-	movq 	$12349895, %rdi
+	movq 	$10, %rdi
 	call	uint_to_str
 
 	movq	$uint_str, %rdi
@@ -163,6 +175,13 @@ main:
 
 	# test if int_to_str if positive
 	movq	$90, %rdi
+	call	int_to_str
+
+	movq	$int_str, %rdi
+	call	print_str	
+
+	# test if int_to_str if negative
+	movq	$-190432, %rdi
 	call	int_to_str
 
 	movq	$int_str, %rdi
