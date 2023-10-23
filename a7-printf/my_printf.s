@@ -26,20 +26,25 @@ my_printf:
 
 # print_str subroutine - print a string using syscalls
 # @param RDI - address of the first character
-# @param RSI - length of the string in characters
 print_str:
 	# prologue
 	pushq	%rbp			# preserve the caller's base pointer
 	movq	%rsp, %rbp		# update the base pointer for this stack frame
-
-	pushq	%rdi
-	pushq	%rsi
 	
+	movq	%rdi, %rdx		# copy the first address to rdx
+	decq	%rdx			# compensate for the first increment in the loop
+	# first find the length of the string
+	print_str_loop:
+		incq	%rdx		# move to the next character
+		movzb	(%rdx), %rax	# move the character from the string to %rax		
+		cmpq	$0, %rax	# check if its null character
+		jnz	print_str_loop	# continue to look for null character	
+	#else
+	subq	%rdi, %rdx		# last_addr - first_addr = length	
+
+	movq	%rdi, %rsi		# address of the first addres in rsi for write
 	movq	$1, %rax		# syscall code for write
 	movq	$1, %rdi		# file desriptor to write to (stdout)
-	popq	%rdx			# store the length of the string in rdx
-	popq	%rsi			# store the address of the first character
-
 	syscall
 
 	# epilogue
@@ -129,7 +134,6 @@ main:
 
 	# test of print_str
 	movq	$output, %rdi		# param1 - address of the first character
-	movq	$12, %rsi		# param2 - length of the string
 	call 	print_str		
 
 	# test of uint_to_str
@@ -138,7 +142,7 @@ main:
 
 	movq	$uint_str, %rdi
 	movq	$0, %rax
-	call	printf
+	call	print_str
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
 	popq	%rbp			# restore the caller's base pointer
