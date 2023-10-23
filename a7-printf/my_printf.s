@@ -12,12 +12,20 @@ output:		.asciz	"Hello World!"
 
 
 # my_printf subroutine
+# @param RDI - format string
+# @param RSI - argument 1 
+# @param RDX - argument 2
+# @param RCX - argument 3
+# @param R8 - argument 4
+# @param
 my_printf:
 	# prologue
 	pushq	%rbp			# preserve the caller's base pointer
 	movq	%rsp, %rbp		# update the base pointer for this stack frame
 
 	# code goes here ...	
+	# @variable %RCX - counter of the number of the variable
+	
 
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
@@ -186,6 +194,7 @@ main:
 
 	movq	$int_str, %rdi
 	call	print_str	
+
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
 	popq	%rbp			# restore the caller's base pointer
