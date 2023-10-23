@@ -129,6 +129,12 @@ sha1_chunk:
     addl    (%rax), %r8d   #(%rax) is w[i]
     movl    %r8d, %eax #temp in %rax
 	
+    movl    a, %r8d
+    movl    b, %r9d
+    movl    c, %r10d
+    movl    d, %r11d
+    movl    e, %r12d
+
     roll    $30, %r9d
 	movl 	%r11d, e
 	movl 	%r10d, d
