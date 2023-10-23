@@ -1,10 +1,10 @@
 .data
-output:		.asciz	"Hello World!"
 uint_str:	.quad 0x0
 		.quad 0x0
 int_str:	.quad 0x0
 		.quad 0x0
 
+output:		.asciz	"Hello World!"
 .text
 
 .global main
@@ -59,6 +59,11 @@ uint_to_str:
 	# prologue
 	pushq	%rbp			# preserve the caller's base pointer
 	movq	%rsp, %rbp		# update the base pointer for this stack frame
+
+	# clear previous results
+	movq	$uint_str, %rax		# store the addres of uint_str in %rax
+	movq	$0, (%rax)		# zero the upper quadword of the double quadword
+	movq	$0, 8(%rax)		# zero the lower quadword of the double quadword
 
 	pushq	%rdi			# store the number on the stack
 	movq	$uint_str, %rdi		# store the addres of the next free digit in rdi
@@ -120,8 +125,21 @@ int_to_str:
 	pushq	%rbp			# preserve the caller's base pointer
 	movq	%rsp, %rbp		# update the base pointer for this stack frame
 
-	# code goes here ...
+	# clear previous results
+	movq	$int_str, %rax		# store the addres of uint_str in %rax
+	movq	$0, (%rax)		# zero the upper quadword of the double quadword
+	movq	$0, 8(%rax)		# zero the lower quadword of the double quadword
 
+	movq	$0x8000000000000000, %rax	#mask to get the MSB 
+	andq	%rdi, %rax		# if the number is positive, rax is zero now
+	cmpq	$0, %rax
+	je	positive
+negative:
+	
+positive:
+	call	uint_to_str		# convert normally
+	movdqa	uint_str, %xmm1		# move the result to int_str
+	movdqa	%xmm1, int_str		
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
 	popq	%rbp			# restore the caller's base pointer
@@ -141,8 +159,14 @@ main:
 	call	uint_to_str
 
 	movq	$uint_str, %rdi
-	movq	$0, %rax
 	call	print_str
+
+	# test if int_to_str if positive
+	movq	$90, %rdi
+	call	int_to_str
+
+	movq	$int_str, %rdi
+	call	print_str	
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
 	popq	%rbp			# restore the caller's base pointer
