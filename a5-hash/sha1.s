@@ -58,14 +58,14 @@ sha1_chunk:
     movsl  
     movsl  
     
+
+    movq    $0, %rcx   # rcx is counter
+    for_loop:
     movl    a, %r8d
     movl    b, %r9d
     movl    c, %r10d
     movl    d, %r11d
     movl    e, %r12d
-
-    movq    $0, %rcx   # rcx is counter
-    for_loop:
 	cmpq	$19, %rcx
 	jle	case0_19
 
