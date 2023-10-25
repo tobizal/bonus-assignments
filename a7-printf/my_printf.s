@@ -25,6 +25,8 @@ my_printf:
 
 	# code goes here ...	
 	# @variable %RCX - counter of the number of the variable
+	movq	$0, %rcx
+	
 	
 
 	# epilogue
