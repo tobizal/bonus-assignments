@@ -14,11 +14,6 @@ argument_5:	.quad 0x0
 output:		.asciz	"Hello World! %%\n"
 output1:	.asciz	"My name is %s. I am %u years old. My favourite number is %d. This is a %% sign.\n"
 output2:	.asciz 	"%s%s%s%s%s%s%s%s."
-output3:	.asciz	"'The quick brown fox quickly jumps over the lazy dog %u%r!'"
-output4:	.asciz	"%s"
-output5:	.asciz	"My name is %s. I think I’ll get a %u for my exam. What does %r do? And %%?"
-piet:		.asciz	"Piet"
-signed:		.asciz	"%d"
 
 name:		.asciz	"Tobiasz"
 
@@ -52,7 +47,7 @@ my_printf:
 	# @variable %RCX - counter of the number of the variable
 	movq	$0, %rcx
 	loop:
-	movb	(%rdi), %al	# character frin the string in RAX
+	movb	(%rdi), %al		# character frin the string in RAX
 	cmpb	$0, %al 	# check if character is 0
 	je	my_printf_end	# if zero, its the end of the string so end
 		
@@ -89,16 +84,6 @@ my_printf:
 
 	cmpb	$'s', (%rdi)
 	je	str_arg	
-
-	#else just print the % and the following characters
-	decq	%rcx
-	decq	%rdi
-	pushq	%rdi
-	pushq	%rcx
-	call	print_char	
-	popq	%rcx
-	popq	%rdi
-	jmp	loop_next
 
 	
 	uint_arg:
@@ -316,13 +301,57 @@ main:
 	pushq	%rbp			# preserve the caller's base pointer
 	movq	%rsp, %rbp		# update the base pointer for this stack frame
 
-	movq	$output5, %rdi
-	movq	$piet, %rsi
-	movq	$10, %rdx
-	call	my_printf
+	# test of print_str
+	movq	$output, %rdi		# param1 - address of the first character
+	call 	print_str		
+
+	# test of uint_to_str
+	movq 	$10, %rdi
+	call	uint_to_str
+
+	movq	$uint_str, %rdi
+	call	print_str
+
+	# test if int_to_str if positive
+	movq	$90, %rdi
+	call	int_to_str
+
+	movq	$int_str, %rdi
+	call	print_str	
+
+	# test if int_to_str if negative
+	movq	$-190432, %rdi
+	call	int_to_str
+
+	movq	$int_str, %rdi
+	call	print_str	
+
+	# test printchar
+	movq	$output, %rdi
+	call 	print_char
 	
-	movq	$signed, %rdi
-	movq	$42, %rsi
+	# test print_str
+	movq	$name, %rdi
+	call 	print_str
+
+	# test printf
+	movq	$output1, %rdi
+	movq	$name, %rsi
+	movq	$20, %rdx
+	movq	$-42, %rcx
+	call	my_printf
+
+	# test printf 
+	movq	$output2, %rdi
+	movq	$name, %rsi
+	movq	$name, %rdx
+	movq	$name, %rcx
+	movq	$name, %r8
+	movq	$name, %r9
+	pushq	$name
+	pushq	$name
+	pushq	$name
+	pushq	$name
 	call	my_printf
 end:
 	# epilogue
