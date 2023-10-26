@@ -34,6 +34,23 @@ my_printf:
 	popq	%rbp			# restore the caller's base pointer
 	ret
 
+# print_char subroutine
+# @param RDI - address of the character
+print_char:
+	# prologue
+	pushq	%rbp			# preserve the caller's base pointer
+	movq	%rsp, %rbp		# update the base pointer for this stack frame
+	
+	movq	%rdi, %rsi		# address of the character
+	movq	$1, %rax		# syscall code for write
+	movq	$1, %rdi		# file descriptor to write - stdout
+	movq	$1, %rdx		# string length - 1 character
+	syscall
+		
+	# epilogue
+	movq	%rbp, %rsp		# clear the stack varialbes
+	popq	%rbp			# restore the caller's base pointer
+	ret
 # print_str subroutine - print a string using syscalls
 # @param RDI - address of the first character
 print_str:
@@ -196,6 +213,10 @@ main:
 
 	movq	$int_str, %rdi
 	call	print_str	
+
+	# test printchar
+	movq	$output, %rdi
+	call 	print_char
 
 	# epilogue
 	movq	%rbp, %rsp		# clear the stack varialbes
